@@ -171,6 +171,7 @@
     <QuestsSorted Action="Pulse" NameClass="quest13235" />
     <QuestsSorted Action="Pulse" NameClass="GoToBlackwatch" />
     <QuestsSorted Action="TurnIn" NameClass="quest13235" />
+    <QuestsSorted Action="Pulse" NameClass="quest13071" />
   </QuestsSorted>
   <NpcQuest>
     <NPCQuest Id="29795" Name="Кольтира Ткач Смерти" GameObject="false">
@@ -3381,36 +3382,6 @@ return true;
       <WoWClass>None</WoWClass>
     </EasyQuest>
     <EasyQuest>
-      <Name>quest13071</Name>
-      <QuestId>
-        <int>13071</int>
-      </QuestId>
-      <QuestType>None</QuestType>
-      <QuestClass />
-      <ObjectiveCount1>0</ObjectiveCount1>
-      <ObjectiveCount2>0</ObjectiveCount2>
-      <ObjectiveCount3>0</ObjectiveCount3>
-      <ObjectiveCount4>0</ObjectiveCount4>
-      <ObjectiveCount5>0</ObjectiveCount5>
-      <AutoDetectObjectiveCount1>false</AutoDetectObjectiveCount1>
-      <AutoDetectObjectiveCount2>false</AutoDetectObjectiveCount2>
-      <AutoDetectObjectiveCount3>false</AutoDetectObjectiveCount3>
-      <AutoDetectObjectiveCount4>false</AutoDetectObjectiveCount4>
-      <AutoDetectObjectiveCount5>false</AutoDetectObjectiveCount5>
-      <CanCondition />
-      <IsCompleteCondition />
-      <RepeatableQuest>false</RepeatableQuest>
-      <NotRequiredInQuestLog>false</NotRequiredInQuestLog>
-      <PickUpQuestOnItem>false</PickUpQuestOnItem>
-      <PickUpQuestOnItemID>0</PickUpQuestOnItemID>
-      <Comment />
-      <GossipOptionRewardItem>1</GossipOptionRewardItem>
-      <RequiredQuest>0</RequiredQuest>
-      <MaxLevel>100</MaxLevel>
-      <MinLevel>0</MinLevel>
-      <WoWClass>None</WoWClass>
-    </EasyQuest>
-    <EasyQuest>
       <Name>quest13117</Name>
       <QuestId>
         <int>13117</int>
@@ -4572,6 +4543,99 @@ return true;
       <AutoDetectObjectiveCount5>false</AutoDetectObjectiveCount5>
       <CanCondition />
       <IsCompleteCondition />
+      <RepeatableQuest>false</RepeatableQuest>
+      <NotRequiredInQuestLog>false</NotRequiredInQuestLog>
+      <PickUpQuestOnItem>false</PickUpQuestOnItem>
+      <PickUpQuestOnItemID>0</PickUpQuestOnItemID>
+      <Comment />
+      <GossipOptionRewardItem>1</GossipOptionRewardItem>
+      <RequiredQuest>0</RequiredQuest>
+      <MaxLevel>100</MaxLevel>
+      <MinLevel>0</MinLevel>
+      <WoWClass>None</WoWClass>
+    </EasyQuest>
+    <EasyQuest>
+      <Name>quest13071</Name>
+      <QuestId>
+        <int>13071</int>
+      </QuestId>
+      <QuestType>OverridePulseCSharpCode</QuestType>
+      <QuestClass xsi:type="OverridePulseCSharpCodeEasyQuestClass">
+        <Code>Vector3 pos = new Vector3(7819.85, 3738.65, 653.378, "None");
+List&lt;Vector3&gt; path = new List&lt;Vector3&gt;(){
+	new Vector3(7739.655, 3711.529, 687.7654, "Flying"),
+	new Vector3(7721.302, 3656.474, 736.0172, "Flying"),
+	new Vector3(7641.82, 3577.303, 740.6425, "Flying"),
+	new Vector3(7586.987, 3496.465, 746.834, "Flying"),
+	new Vector3(7700.946, 3404.84, 708.4203, "Flying"),
+	new Vector3(7769.907, 3430.771, 705.4451, "Flying"),
+	new Vector3(7753.454, 3480.875, 701.5627, "Flying"),
+	new Vector3(7843.718, 3481.379, 740.9242, "Flying"),
+	new Vector3(7783.461, 3572.913, 713.5368, "Flying"),
+	new Vector3(7841.972, 3642.551, 704.0479, "Flying"),
+	new Vector3(7807.091, 3707.15, 656.5772, "Flying"),
+};
+int closest = 0;
+for(int i=1; i&lt;path.Count; i++)
+	if(ObjectManager.Me.Position.DistanceTo(path[i]) &lt; ObjectManager.Me.Position.DistanceTo(path[closest]))
+		closest = i;
+if(!ObjectManager.Me.InTransport){
+	GoToTask.ToPosition(pos);
+	if(ObjectManager.Me.Position.DistanceTo(pos) &lt; 5){
+		if(ObjectManager.Me.IsMounted){
+			Lua.LuaDoString("Dismount()");
+			Thread.Sleep(1000);
+		}
+		var drakon = ObjectManager.GetObjectWoWUnit().Where(u =&gt; u.Entry == 30272 &amp;&amp; u.IsAlive).OrderBy(u =&gt; u.GetDistance).FirstOrDefault();
+		if(drakon != null){
+			Interact.InteractGameObject(drakon.GetBaseAddress);
+			Thread.Sleep(1000);
+		}
+	}
+}
+else{
+	while(Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause &amp;&amp; ObjectManager.Me.InTransport){
+		MovementManager.MoveTo(path[closest]);
+		SpellManager.CastSpellByIdLUA(57493);
+		while(Conditions.InGameAndConnectedAndAliveAndProductStartedNotInPause &amp;&amp; ObjectManager.Me.InTransport){
+			Thread.Sleep(1000);
+			if(ObjectManager.Me.Position.DistanceTo(path[closest]) &lt; 10 ){
+				 if(!Quest.IsObjectiveComplete(1, 13071)){
+					SpellManager.CastSpellByIdLUA(7769);
+					Thread.Sleep(1000);
+					SpellManager.CastSpellByIdLUA(7769);
+					Thread.Sleep(1000);
+				}
+				break;
+			}
+		}
+		closest++;
+
+		if(Quest.IsObjectiveComplete(1, 13071) &amp;&amp; ObjectManager.Me.InTransport &amp;&amp; closest &gt;= path.Count){
+			Lua.LuaDoString("VehicleExit()");
+			Thread.Sleep(1000);
+			break;
+		}
+		if(closest &gt;= path.Count)
+			closest = 0;
+	}
+
+}
+return true;
+</Code>
+      </QuestClass>
+      <ObjectiveCount1>0</ObjectiveCount1>
+      <ObjectiveCount2>0</ObjectiveCount2>
+      <ObjectiveCount3>0</ObjectiveCount3>
+      <ObjectiveCount4>0</ObjectiveCount4>
+      <ObjectiveCount5>0</ObjectiveCount5>
+      <AutoDetectObjectiveCount1>false</AutoDetectObjectiveCount1>
+      <AutoDetectObjectiveCount2>false</AutoDetectObjectiveCount2>
+      <AutoDetectObjectiveCount3>false</AutoDetectObjectiveCount3>
+      <AutoDetectObjectiveCount4>false</AutoDetectObjectiveCount4>
+      <AutoDetectObjectiveCount5>false</AutoDetectObjectiveCount5>
+      <CanCondition />
+      <IsCompleteCondition>return Quest.IsObjectiveComplete(1, 13071) &amp;&amp; !ObjectManager.Me.InTransport;</IsCompleteCondition>
       <RepeatableQuest>false</RepeatableQuest>
       <NotRequiredInQuestLog>false</NotRequiredInQuestLog>
       <PickUpQuestOnItem>false</PickUpQuestOnItem>
